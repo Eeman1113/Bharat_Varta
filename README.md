@@ -5,7 +5,7 @@ composed fresh every refresh, drawn from the wires of 300+ Indian outlets.
 
 **Live at [bharatvarta.vercel.app](https://bharatvarta.vercel.app/)**
 
-![Bharat Varta](public/screenshots/hero.png)
+![Bharat Varta](public/screenshots/hero.jpg)
 
 ---
 
@@ -32,7 +32,7 @@ A daily front page that reads like a broadsheet from 1918:
   filter + 45° dot screen at multiply blend, so images print like ink on
   newsprint.
 
-![Front page](public/screenshots/front-page.png)
+![Front page](public/screenshots/front-page.jpg)
 
 ---
 

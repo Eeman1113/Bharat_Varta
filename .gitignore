@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+.vercel/
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.log
+tsconfig.tsbuildinfo
+
+# Assistant / agent scratch files — never commit
+CLAUDE.md
+AGENTS.md

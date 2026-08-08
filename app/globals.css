@@ -1,0 +1,1353 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Self-hosted Missaali (Tommi Syrjänen, OFL) — via CTAN texlive-missaali */
+@font-face {
+  font-family: "Missaali";
+  src: url("/fonts/Missaali-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Self-hosted Libre Caslon Text (Pablo Impallari, OFL) — via CTAN librecaslon */
+@font-face {
+  font-family: "Libre Caslon Text";
+  src: url("/fonts/LibreCaslonText-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Libre Caslon Text";
+  src: url("/fonts/LibreCaslonText-Italic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Libre Caslon Text";
+  src: url("/fonts/LibreCaslonText-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Libre Caslon Text";
+  src: url("/fonts/LibreCsln-BoldItalic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Self-hosted Yinit (Yannis Haralambous, Public Domain) — via CTAN yinit-otf
+   Old German decorative initial capitals for the illuminated drop-cap. */
+@font-face {
+  font-family: "Yinit";
+  src: url("/fonts/Yinit.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Self-hosted IM Fell English (Igino Marini, OFL) — via CTAN imfellenglish
+   Regular, Italic, and a dedicated Small-Caps OTF. */
+@font-face {
+  font-family: "IM Fell English";
+  src: url("/fonts/IMFeENrm28P.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IM Fell English";
+  src: url("/fonts/IMFeENit28P.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Alias "Caslon-SC" → IM Fell English small-caps OTF (a real SC font file,
+   not browser-synthesized). No free Caslon SC exists; IM Fell SC is the
+   closest freely-licensed historical small-caps humanist face. */
+@font-face {
+  font-family: "Caslon-SC";
+  src: url("/fonts/IMFeENsc28P.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background-color: theme("colors.paper");
+  color: theme("colors.ink");
+  font-family: theme("fontFamily.serif");
+  font-size: 18.963px;
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  font-feature-settings: "hist", "hlig", "onum", "swsh", "liga", "kern";
+  font-variant-ligatures: discretionary-ligatures;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Belt-and-braces guard against horizontal scroll on narrow phones —
+     any single overflowing tile (wire photos, long unbroken URLs in
+     description text) would otherwise trigger a page-wide horizontal
+     scrollbar and rescale the layout in mobile Safari. */
+  overflow-x: hidden;
+}
+
+/* Shrink the root font-size on very small phones so every rem-based
+   measurement (headlines, ledes, gutters, padding) collapses in lock
+   step. 18.963px is a beautiful ratio on desktop but too generous when
+   we've got 375px to work with. */
+@media (max-width: 640px) {
+  html, body { font-size: 16.5px; }
+}
+@media (max-width: 380px) {
+  html, body { font-size: 15.5px; }
+}
+
+/* Prevent any wide inline media / long word from busting the viewport. */
+img, svg, video, canvas {
+  max-width: 100%;
+}
+p, h1, h2, h3, h4, li, a {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+::selection {
+  background: #1a1a1a;
+  color: #eeece7;
+}
+
+/* Asterism — used only at the top of the front page */
+.asterism {
+  display: block;
+  text-align: center;
+  color: theme("colors.ink");
+  font-size: 1.25rem;
+  letter-spacing: 1.4em;
+  padding-left: 1.4em; /* offset last letter-spacing to keep it centered */
+  margin: 2rem 0 2.5rem;
+  user-select: none;
+}
+.asterism::before {
+  content: "✻ ✻ ✻";
+}
+
+/* Thin section divider — used between dispatches */
+hr.rule {
+  border: 0;
+  border-top: 1px solid theme("colors.rule");
+  margin: 3.5rem auto;
+  max-width: 34rem;
+}
+
+/* Small caps helper */
+.smcaps {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.14em;
+}
+
+/* Centered small-caps essay title — matches reference "Caslon-SC" heading */
+.title-caps {
+  font-family: "Caslon-SC", "Libre Caslon Text", "Adobe Caslon Pro", Caslon,
+    "EB Garamond", Georgia, serif;
+  font-variant-caps: all-small-caps;
+  font-variant-ligatures: discretionary-ligatures;
+  font-feature-settings: "hist", "hlig", "onum", "swsh", "smcp", "c2sc";
+  font-weight: 100;
+  font-size: 1.665rem; /* 26.6366px against a 16px rem */
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* Body prose */
+.prose-paper {
+  line-height: 1.7;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  hyphens: auto;
+}
+.prose-paper p + p {
+  text-indent: 1.5em;
+  margin-top: 0.25rem;
+}
+.prose-paper a {
+  color: theme("colors.ink");
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.prose-paper.justify p {
+  text-align: justify;
+}
+
+/* Wordmark (masthead h1) — matches reference site's calligraphic heading */
+.wordmark {
+  font-family: "Elzevir-Italic", "IM Fell English", "Libre Caslon Text",
+    Missaali, Garamond, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  font-feature-settings: "hist", "hlig", "onum", "swsh";
+  font-variant-ligatures: discretionary-ligatures;
+  line-height: 1;
+}
+
+/* Page-post: essay layout ------------------------------------------------ */
+.page-post header h2 {
+  text-align: center;
+  font-family: "Caslon-SC", "Libre Caslon Text", Caslon, "EB Garamond",
+    Georgia, serif;
+  font-variant-caps: all-small-caps;
+  font-feature-settings: "hist", "hlig", "onum", "swsh", "smcp", "c2sc";
+  font-weight: 100;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  letter-spacing: 0.04em;
+  margin: 5rem auto 3.5rem;
+  max-width: 42rem;
+  line-height: 1.2;
+}
+.page-post header h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+.page-post main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+.page-post article p {
+  text-align: justify;
+  hyphens: auto;
+  line-height: 1.75;
+  margin: 0 0 1.15em;
+}
+.page-post article p + p {
+  text-indent: 1.5em;
+  margin-top: 0;
+}
+.page-post article a {
+  color: theme("colors.ink");
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* First paragraph: ornamental initial + small-caps first word */
+.page-post article p:first-of-type {
+  text-indent: 0;
+}
+.page-post article p:first-of-type::first-letter {
+  font-family: Yinit, "IM Fell English", "Libre Caslon Text", Caslon, serif;
+  float: left;
+  font-size: 5.5em;
+  line-height: 0.82;
+  padding: 0.25rem 0.65rem 0 0;
+  font-weight: 400;
+  color: theme("colors.ink");
+  shape-outside: margin-box;
+}
+.page-post article p:first-of-type .first-word {
+  font-variant-caps: all-small-caps;
+  font-feature-settings: "smcp", "c2sc", "hist", "hlig", "onum";
+  letter-spacing: 0.06em;
+}
+
+/* Figure + blockquote + figcaption */
+.page-post article figure {
+  margin: 2.25rem 0;
+  text-align: center;
+}
+.page-post article blockquote {
+  font-style: italic;
+  margin: 0 auto;
+  max-width: 34rem;
+  padding: 0 1rem;
+  text-align: justify;
+  color: theme("colors.ink");
+}
+.page-post article blockquote p {
+  text-indent: 0;
+  margin: 0;
+}
+.page-post article figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.12em;
+  color: theme("colors.muted");
+}
+.page-post article figcaption cite {
+  font-style: italic;
+  font-variant-caps: normal;
+  letter-spacing: 0;
+}
+
+/* Colophon at the end of the essay: numeric signature line */
+.page-post main > footer {
+  text-align: center;
+  font-family: theme("fontFamily.mono");
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: theme("colors.muted");
+  margin: 3rem 0 4rem;
+}
+
+/* Central fleuron image */
+.image-fleuron {
+  max-width: 42rem;
+  margin: 0 auto 5rem;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+.image-fleuron img {
+  width: 100%;
+  height: auto;
+  opacity: 0.85;
+}
+
+/* ========================================================================= */
+/* Newspaper layout                                                          */
+/* ========================================================================= */
+
+.np-headline {
+  font-family: "Caslon-SC", "Libre Caslon Text", Caslon, "EB Garamond",
+    Georgia, serif;
+  font-weight: 400;
+  font-variant-caps: all-small-caps;
+  font-feature-settings: "hist", "hlig", "onum", "swsh", "smcp", "c2sc",
+    "liga", "kern";
+  color: theme("colors.ink");
+  margin: 0 0 0.4rem;
+  letter-spacing: 0.04em;
+  /* Fatten the thin IM Fell SC glyphs to read as darker/heavier */
+  -webkit-text-stroke: 0.15px currentColor;
+  paint-order: stroke fill;
+}
+.np-headline-link {
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(theme("colors.ink"), theme("colors.ink"));
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  transition: background-size 0.2s ease;
+}
+.np-headline-link:hover {
+  background-size: 100% 1px;
+}
+
+.np-lede {
+  font-family: "Libre Caslon Text", Caslon, Georgia, serif;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  text-align: justify;
+  hyphens: auto;
+  color: rgba(26, 26, 26, 0.82);
+  margin: 0.2rem 0 0;
+}
+.np-lede-empty {
+  font-family: theme("fontFamily.mono");
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+  margin: 0.4rem 0 0;
+}
+
+.np-src {
+  font-family: theme("fontFamily.mono");
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+}
+.np-src a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid theme("colors.rule");
+}
+.np-src a:hover {
+  color: theme("colors.ink");
+  border-bottom-color: theme("colors.ink");
+}
+
+/* Newspaper image treatment — stark B&W halftone.
+   Layers, bottom-up:
+     1. <img>            — grayscale posterized (5 levels) + slight blur (ink bleed)
+     2. ::before overlay — dot screen at 45° (the classic magazine screen angle)
+     3. ::after overlay  — fractal noise (paper grain)
+*/
+.np-img-wrap {
+  position: relative;
+  isolation: isolate;
+  background: theme("colors.paper");
+  overflow: hidden;
+}
+.np-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: url(#halftone-bw) grayscale(1) contrast(1.2);
+}
+
+/* Halftone dot screen at 45° — the printing-press look */
+.np-img-wrap::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  pointer-events: none;
+  transform: rotate(45deg);
+  transform-origin: center;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0.72) 0.55px,
+    transparent 0.95px
+  );
+  background-size: 2.6px 2.6px;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+
+/* Paper grain */
+.np-img-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.1;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Section header — clean centered chapter-title style */
+.np-section-head {
+  text-align: center;
+  margin: 4rem 0 2.5rem;
+  padding: 0;
+  border: 0;
+}
+.np-section-head h2 {
+  font-family: "Caslon-SC", "Libre Caslon Text", Caslon, serif;
+  font-variant-caps: all-small-caps;
+  font-feature-settings: "smcp", "c2sc", "hist", "hlig", "onum", "swsh";
+  font-weight: 400;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  letter-spacing: 0.05em;
+  line-height: 1.15;
+  margin: 0;
+  color: theme("colors.ink");
+}
+.np-section-head .np-section-tag {
+  display: block;
+  margin-top: 0.6rem;
+  font-family: theme("fontFamily.mono");
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+}
+
+/* Column grids — use CSS columns for that flowed-typography feel */
+.np-columns-4 {
+  column-count: 1;
+  column-gap: 2rem;
+  column-rule: 1px solid theme("colors.rule");
+}
+@media (min-width: 640px)  { .np-columns-4 { column-count: 2; } }
+@media (min-width: 900px)  { .np-columns-4 { column-count: 3; } }
+@media (min-width: 1200px) { .np-columns-4 { column-count: 4; } }
+
+.np-columns-3 {
+  column-count: 1;
+  column-gap: 2rem;
+  column-rule: 1px solid theme("colors.rule");
+}
+@media (min-width: 640px)  { .np-columns-3 { column-count: 2; } }
+@media (min-width: 1000px) { .np-columns-3 { column-count: 3; } }
+
+.np-columns-2 {
+  column-count: 1;
+  column-gap: 2rem;
+  column-rule: 1px solid theme("colors.rule");
+}
+@media (min-width: 800px)  { .np-columns-2 { column-count: 2; } }
+
+.np-tile {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Front-page hero: lead story spans wider, secondary stories flank it */
+.np-front-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .np-front-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+.np-front-grid > .np-front-lead {
+  border-right: none;
+}
+@media (min-width: 900px) {
+  .np-front-grid > .np-front-lead {
+    padding-right: 2rem;
+    border-right: 1px solid theme("colors.rule");
+  }
+}
+
+/* Reader page — long-form article shell */
+.np-reader {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+.np-reader .np-reader-kicker {
+  font-family: theme("fontFamily.mono");
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+  text-align: center;
+  margin: 2.5rem 0 0.75rem;
+}
+.np-reader h1 {
+  font-family: "Caslon-SC", "Libre Caslon Text", Caslon, serif;
+  font-weight: 400;
+  font-variant-caps: all-small-caps;
+  font-feature-settings: "smcp", "c2sc", "hist", "hlig", "onum", "swsh";
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  line-height: 1.15;
+  text-align: center;
+  letter-spacing: 0.045em;
+  margin: 0 0 1rem;
+  -webkit-text-stroke: 0.2px currentColor;
+  paint-order: stroke fill;
+}
+.np-reader .np-reader-src {
+  text-align: center;
+  font-family: theme("fontFamily.mono");
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+  margin: 0 0 2rem;
+}
+.np-reader .np-reader-src a {
+  color: theme("colors.ink");
+  border-bottom: 1px solid theme("colors.rule");
+  text-decoration: none;
+}
+.np-reader-lead-img {
+  margin: 0 0 2rem;
+}
+.np-reader-body {
+  font-family: "Libre Caslon Text", Caslon, Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  text-align: justify;
+  hyphens: auto;
+}
+.np-reader-body p {
+  margin: 0 0 1.1em;
+}
+.np-reader-body p + p {
+  text-indent: 1.5em;
+  margin-top: 0;
+}
+.np-reader-body p:first-of-type::first-letter {
+  font-family: Yinit, "IM Fell English", "Libre Caslon Text", Caslon, serif;
+  float: left;
+  font-size: 5em;
+  line-height: 0.82;
+  padding: 0.25rem 0.55rem 0 0;
+  color: theme("colors.ink");
+}
+.np-reader-body a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.np-reader-body img {
+  max-width: 100%;
+  height: auto;
+  filter: grayscale(1) contrast(1.3) brightness(0.9);
+  margin: 1.5rem 0;
+}
+
+.np-reader-outbound {
+  text-align: center;
+  margin: 2rem 0 1rem;
+  font-family: theme("fontFamily.mono");
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.np-reader-outbound a {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid theme("colors.ink");
+  color: theme("colors.ink");
+  text-decoration: none;
+}
+.np-reader-outbound a:hover {
+  background: theme("colors.ink");
+  color: theme("colors.paper");
+}
+
+/* ========================================================================= */
+/* Dynamic layout primitives — added for the reshuffling broadsheet.         */
+/* The typographic scale below only augments the existing .np-headline etc.  */
+/* ========================================================================= */
+
+/* Twelve-column dense grid; tiles carry inline grid-column / grid-row spans.
+   `dense` lets larger tiles pack around gaps left by earlier smaller ones.  */
+.np-grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: 1.75rem 2rem;
+  align-items: start;
+}
+
+/* Column-rule mimic: draw a hairline on the LEFT of every tile that starts
+   past column 1. We approximate by giving all tiles a left padding + border,
+   then hiding the border on tiles at column 1 via CSS. (Impossible to know
+   grid position without JS, so we accept an imperfect effect and let the
+   background paper texture carry visual continuity.) */
+.np-grid-12 > .np-cell {
+  padding-left: 1rem;
+  border-left: 1px solid theme("colors.rule");
+}
+.np-grid-12 > .np-cell.np-cell-flush {
+  padding-left: 0;
+  border-left: 0;
+}
+/* Full-width cells (span-12) never get a rule */
+.np-grid-12 > .np-cell[style*="span 12"] {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* Hero headline — larger than the "lead" variant */
+.np-headline-hero {
+  font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+}
+
+/* Constrain lead/hero/landscape images so they never blow up to full page.
+   Wire photos often ship at 1600×900+ and w-full h-auto lets them dominate.
+   We give the wrap a fixed aspect-ratio + height so `object-fit: cover` on the
+   image resolves against a real box (otherwise Tailwind's `h-auto` utility
+   wins the cascade and the img renders at its natural aspect ratio, blowing
+   past the wrap's max-height and forcing overflow-clipping off-center). */
+.np-band-lead .np-img-wrap,
+.np-band-feature .np-img-wrap {
+  height: 260px;
+  max-height: 260px;
+  aspect-ratio: auto;
+  overflow: hidden;
+}
+.np-band-lead .np-img-wrap .np-img,
+.np-band-feature .np-img-wrap .np-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+/* When a lead has NO secondary column it spans full width — clamp harder */
+.np-band-lead:has(> .np-band-lead-main:only-child) .np-img-wrap {
+  height: 380px;
+  max-height: 380px;
+}
+.np-photo-cell .np-img-wrap {
+  height: 240px;
+  max-height: 240px;
+  overflow: hidden;
+}
+.np-photo-cell .np-img-wrap .np-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+/* Portrait tiles (photo-strip, columnPair image slot) — cap height so the
+   `w-full h-auto` doesn't render a full-column-height image */
+.np-tile .np-img-wrap {
+  max-height: 260px;
+  overflow: hidden;
+}
+.np-tile .np-img-wrap .np-img {
+  width: 100% !important;
+  height: 260px !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+/* Landscape variant restores natural sizing since it's a specific composition */
+.np-tile-landscape .np-img-wrap {
+  max-height: 220px;
+  height: 220px;
+}
+.np-tile-landscape .np-img-wrap .np-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+/* Photo-strip cells override the generic .np-tile rule so they use the
+   240px photo-strip crop, not the tile cap. */
+.np-photo-cell .np-tile .np-img-wrap {
+  max-height: 240px;
+  height: 240px;
+}
+.np-photo-cell .np-tile .np-img-wrap .np-img {
+  height: 240px !important;
+}
+/* Lead/feature main tile — override generic tile cap so hero photos get the
+   full 340px slot. */
+.np-band-lead-main .np-tile .np-img-wrap,
+.np-feature-main .np-tile .np-img-wrap {
+  max-height: 340px;
+  height: 340px;
+}
+.np-band-lead-main .np-tile .np-img-wrap .np-img,
+.np-feature-main .np-tile .np-img-wrap .np-img {
+  height: 340px !important;
+}
+
+/* Landscape tile — image on the left, text on the right */
+.np-landscape-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .np-landscape-grid {
+    grid-template-columns: 5fr 7fr;
+    align-items: start;
+  }
+}
+
+/* Slight tightening for tiles that end up in narrow (span 2-3) cells */
+.np-cell[style*="span 2"] .np-headline,
+.np-cell[style*="span 3"] .np-headline {
+  letter-spacing: 0.035em;
+}
+
+/* Marginalia — decorative page-rhythm elements */
+.np-margin {
+  border-top: 1px solid theme("colors.ink");
+  border-bottom: 1px solid theme("colors.ink");
+  padding: 1rem 0.75rem;
+  text-align: center;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+}
+.np-margin-fleuron {
+  font-family: "Yinit", "IM Fell English", "Libre Caslon Text", serif;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: theme("colors.ink");
+  letter-spacing: 0.4em;
+  padding-left: 0.4em;
+  user-select: none;
+}
+.np-margin-label {
+  font-family: theme("fontFamily.mono");
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+}
+.np-margin-quote {
+  font-family: "Libre Caslon Text", Caslon, Georgia, serif;
+  font-style: italic;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: theme("colors.ink");
+  text-align: center;
+  hyphens: auto;
+  quotes: "\201C" "\201D";
+}
+.np-margin-quote::before { content: open-quote; }
+.np-margin-quote::after  { content: close-quote; }
+.np-margin-cite {
+  font-family: theme("fontFamily.mono");
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+}
+
+/* Portrait tile — image on top, tight column below.
+   Just uses existing tile styles; nothing extra needed. */
+
+/* On small screens force everything to one column of readable width */
+@media (max-width: 640px) {
+  .np-grid-12 {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .np-grid-12 > .np-cell {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid theme("colors.rule");
+    padding-top: 1.25rem;
+  }
+  .np-grid-12 > .np-cell:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+/* ========================================================================= */
+/* Newspaper band primitives                                                 */
+/* Every section is composed as a *stack of bands*. Each band is a canonical */
+/* broadsheet unit (lead package, briefs row, column triple, etc). Bands    */
+/* have consistent internal rules; only the sequence of bands is random.    */
+/* ========================================================================= */
+
+/* Section pair — two chapters side by side, separated by a thin
+   vertical rule. This is the authentic newspaper "chapter spread"
+   arrangement (e.g. National | International, Sports | Tech). Below
+   900px the pair collapses to a single stacked column.               */
+.np-section-pair {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+  position: relative;
+}
+@media (min-width: 900px) {
+  .np-section-pair {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+  .np-section-pair::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 5rem;
+    bottom: 2rem;
+    width: 1px;
+    background: theme("colors.rule");
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+}
+.np-section-pair-col {
+  min-width: 0;
+}
+
+.np-band-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.np-band-wrap {
+  display: flex;
+  flex-direction: column;
+}
+.np-band {
+  padding: 0.25rem 0 1.5rem;
+}
+/* Thin hairline separator between bands — the visual "band boundary" */
+.np-band-sep {
+  border: 0;
+  border-top: 1px solid theme("colors.rule");
+  margin: 0.5rem 0 1.75rem;
+}
+
+/* ---- Lead package -------------------------------------------------------
+   Above-the-fold lead: dominant image + attached headline/deck/lede,
+   optionally paired with a text-heavy secondary column on the right so the
+   top of the section reads as one two-column composition of comparable
+   weight. Image and text are always visually joined (never floating).       */
+.np-band-lead {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .np-band-lead {
+    grid-template-columns:
+      minmax(0, var(--lead-span, 8fr))
+      minmax(0, var(--sec-span, 4fr));
+    gap: 0;
+  }
+  /* Vertical column rule between the hero and the digest. Placed as
+     a `border-right` on the main column so it sits at an integer pixel
+     boundary derived from the lead-main's own width, avoiding the
+     fractional grid-math position that caused the phantom double-rule. */
+  .np-band-lead-main {
+    padding-right: 2rem;
+    border-right: 1px solid theme("colors.rule");
+  }
+}
+/* Lead secondary = dense 2-col mini-digest of 4–6 briefs, each with
+   headline + 1-line lede + src. Packed top-aligned (no space-between
+   stretching) so items sit tight against the top of the hero, no dead
+   whitespace beneath. No left border (phantom-rule fix retained). */
+.np-band-lead-secondary {
+  padding-left: 2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem 1.75rem;
+  align-content: start;
+}
+@media (min-width: 900px) {
+  .np-band-lead-secondary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.np-lead-digest-cell {
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed theme("colors.rule");
+}
+/* Kill border-bottom on the trailing pair (last row of the 2-col grid). */
+.np-lead-digest-cell:nth-last-child(-n+2) {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+/* Sole-lead bands (no secondary) get a single column at full width */
+.np-band-lead:has(> .np-band-lead-main:only-child) {
+  grid-template-columns: 1fr;
+}
+
+/* ---- Briefs row ---------------------------------------------------------
+   Row of 3–5 identical briefs — same shape, aligned into a clean row.
+   Column rules between briefs. Fixed cell shape so the row reads as ONE
+   band ("News in Brief"), not as scattered tiles.                          */
+.np-band-briefs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 700px) {
+  .np-band-briefs { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+  .np-band-briefs {
+    grid-template-columns: repeat(var(--brief-count, 4), minmax(0, 1fr));
+  }
+}
+.np-brief-cell {
+  padding-left: 1.25rem;
+  border-left: 1px solid theme("colors.rule");
+}
+.np-brief-cell:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+/* News-digest deep briefs (multi-row grid). Zero the left rule on the
+   first cell of every row so column-1 stays flush and only the true
+   inter-column dividers show. Also add generous row-gap so stacked
+   items don't visually run into each other. */
+@media (min-width: 1000px) {
+  .np-band-briefs-c3 { row-gap: 2rem; }
+  .np-band-briefs-c4 { row-gap: 2rem; }
+  .np-band-briefs-c5 { row-gap: 2rem; }
+  .np-band-briefs-c3 .np-brief-cell:nth-child(3n+1) { padding-left: 0; border-left: 0; }
+  .np-band-briefs-c4 .np-brief-cell:nth-child(4n+1) { padding-left: 0; border-left: 0; }
+  .np-band-briefs-c5 .np-brief-cell:nth-child(5n+1) { padding-left: 0; border-left: 0; }
+}
+@media (max-width: 999px) {
+  .np-brief-cell { padding-left: 0; border-left: 0; }
+}
+.np-brief-headline {
+  font-size: 1.05rem;
+  line-height: 1.16;
+}
+.np-brief-lede {
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+/* ---- Column triple ------------------------------------------------------
+   3 equal-width text columns of similar length side-by-side. The classic
+   "News Digest" band — no images, uniform rhythm, column rules between.   */
+.np-band-column-triple {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+}
+@media (min-width: 700px) {
+  .np-band-column-triple { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+  .np-band-column-triple { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ---- Column pair --------------------------------------------------------
+   2 equal-width text columns; optionally a small portrait image atop one.  */
+.np-band-column-pair {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+}
+@media (min-width: 800px) {
+  .np-band-column-pair { grid-template-columns: 1fr 1fr; }
+}
+
+.np-column-cell {
+  padding-left: 1.25rem;
+  border-left: 1px solid theme("colors.rule");
+}
+.np-column-cell:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+@media (max-width: 999px) {
+  .np-band-column-triple .np-column-cell,
+  .np-band-column-pair .np-column-cell {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+/* Column cells inside a feature side or lead secondary — the container
+   already draws a left rule, so kill the cell's own rule to prevent the
+   doubled-line effect. */
+.np-feature-side .np-column-cell,
+.np-band-lead-secondary .np-column-cell {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* ---- Feature box --------------------------------------------------------
+   A bordered, emphasized story with image — breaks the monotony after a
+   few bands. Paired with 2 briefs or a single column beside it.           */
+.np-band-feature {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+  padding: 1.25rem 0;
+}
+@media (min-width: 900px) {
+  .np-band-feature {
+    grid-template-columns:
+      minmax(0, var(--feat-span, 6fr))
+      minmax(0, var(--side-span, 6fr));
+    align-items: start;
+  }
+}
+.np-feature-side {
+  padding-left: 1.25rem;
+  border-left: 1px solid theme("colors.rule");
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  /* Spread the stack so items fill the feature's height, matching the
+     bordered main-column height instead of leaving huge dead whitespace. */
+  justify-content: space-between;
+  align-self: stretch;
+}
+@media (max-width: 899px) {
+  .np-feature-side {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid theme("colors.rule");
+    padding-top: 1.25rem;
+  }
+}
+.np-brief-cell-stacked {
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed theme("colors.rule");
+  /* Stacked briefs sit inside .np-feature-side, which already draws its
+     own left rule. Zero the cell's own left rule so we don't render a
+     double vertical line beside the second/third stacked brief. */
+  border-left: 0;
+  padding-left: 0;
+}
+.np-brief-cell-stacked:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* ---- Photo strip --------------------------------------------------------
+   Row of 2–3 image tiles of matched height. Used sparingly, as an
+   "In Pictures" break.                                                     */
+.np-band-photo-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+}
+@media (min-width: 800px) {
+  .np-band-photo-strip {
+    grid-template-columns: repeat(var(--photo-count, 3), minmax(0, 1fr));
+  }
+}
+.np-photo-cell {
+  padding-left: 1.25rem;
+  border-left: 1px solid theme("colors.rule");
+}
+.np-photo-cell:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+@media (max-width: 799px) {
+  .np-photo-cell { padding-left: 0; border-left: 0; }
+}
+
+/* ---- Two-column split ---------------------------------------------------
+   Row split into two column groups (2 stories each), 6+6. Each group is a
+   vertical stack; the two groups sit side-by-side separated by a rule.    */
+.np-band-two-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+}
+@media (min-width: 900px) {
+  .np-band-two-split { grid-template-columns: 1fr 1fr; }
+}
+.np-split-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-left: 1.25rem;
+  border-left: 1px solid theme("colors.rule");
+}
+.np-split-group:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+@media (max-width: 899px) {
+  .np-split-group { padding-left: 0; border-left: 0; }
+}
+.np-split-cell + .np-split-cell {
+  border-top: 1px solid theme("colors.rule");
+  padding-top: 1.25rem;
+}
+
+/* ========================================================================= */
+/* Responsive headline scale                                                 */
+/* Each variant defines its own clamp() so all headlines shrink together as  */
+/* the viewport narrows, from 1440px down to 320px. Preserves the desktop    */
+/* character while keeping small screens readable and unbroken.              */
+/* ========================================================================= */
+.np-headline-lead     { font-size: clamp(1.55rem, 4.4vw, 2.5rem);  line-height: 1.05; }
+.np-headline-wide     { font-size: clamp(1.35rem, 3.8vw, 1.8rem);  line-height: 1.08; }
+.np-headline-landscape{ font-size: clamp(1.2rem,  3.2vw, 1.55rem); line-height: 1.1; }
+.np-headline-portrait { font-size: clamp(1.1rem,  2.6vw, 1.25rem); line-height: 1.14; }
+.np-headline-column   { font-size: clamp(1.15rem, 3.0vw, 1.4rem);  line-height: 1.12; }
+.np-headline-brief    { font-size: clamp(1.02rem, 2.4vw, 1.15rem); line-height: 1.16; }
+
+/* The hero headline was previously clamp(1.9, 3.2vw, 2.6) — on 375px vw
+   the middle term collapses to ~12px so the header locks to the 1.9rem
+   minimum and can look chunky next to a 200px hero image. Give it more
+   room to breathe at both extremes. */
+.np-headline-hero {
+  font-size: clamp(1.75rem, 5.5vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+}
+
+/* Balance multi-line headlines so the last line doesn't hang short —
+   the browser re-breaks lines to be visually even, like a real paper's
+   copy-desk would tune a display headline by hand. Applied only to the
+   larger variants where uneven wraps look most awkward. */
+.np-headline-hero,
+.np-headline-lead,
+.np-headline-wide,
+.np-headline-landscape,
+.np-headline-column,
+.np-section-head h2 {
+  text-wrap: balance;
+}
+
+/* ========================================================================= */
+/* Mobile-specific overrides                                                 */
+/* Everything below 640px collapses the desktop-first layout gracefully.     */
+/* ========================================================================= */
+@media (max-width: 640px) {
+  /* Main + masthead + footer share the same paper margin at phone widths */
+  main.mx-auto,
+  .np-masthead,
+  footer.mx-auto {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Section header is a beat softer — less air, smaller title */
+  .np-section-head {
+    margin: 2.25rem 0 1.25rem;
+  }
+  .np-section-head h2 {
+    font-size: clamp(1.2rem, 5.5vw, 1.5rem);
+  }
+
+  /* Bands need tighter vertical rhythm at phone widths */
+  .np-band { padding: 0 0 1rem; }
+  .np-band-sep { margin: 0.25rem 0 1.25rem; }
+  .np-section-pair { gap: 1rem; margin-top: 0.5rem; }
+
+  /* Hero photo box: 260px was chosen for tablet+; on 375px it dominates
+     the fold. Cap at 200px so headline + hero read as a single unit. */
+  .np-band-lead .np-img-wrap,
+  .np-band-feature .np-img-wrap {
+    height: 200px !important;
+    max-height: 200px !important;
+  }
+  .np-band-lead:has(> .np-band-lead-main:only-child) .np-img-wrap {
+    height: 240px !important;
+    max-height: 240px !important;
+  }
+  .np-band-lead-main .np-tile .np-img-wrap,
+  .np-feature-main .np-tile .np-img-wrap {
+    max-height: 240px !important;
+    height: 240px !important;
+  }
+  .np-band-lead-main .np-tile .np-img-wrap .np-img,
+  .np-feature-main .np-tile .np-img-wrap .np-img {
+    height: 240px !important;
+  }
+  .np-photo-cell .np-img-wrap {
+    height: 200px !important;
+    max-height: 200px !important;
+  }
+  .np-tile .np-img-wrap {
+    max-height: 220px !important;
+  }
+  .np-tile .np-img-wrap .np-img {
+    height: 220px !important;
+  }
+  .np-tile-landscape .np-img-wrap {
+    max-height: 160px !important;
+    height: 160px !important;
+  }
+
+  /* Landscape variant on very small screens: image on top, text below.
+     The 5fr 7fr split at 640+ still applies; below 640 the grid already
+     collapses to 1fr from .np-landscape-grid's default. */
+
+  /* Lead secondary column — kill the extra left padding on mobile so
+     the collapsed single-column stack aligns with the main column. */
+  .np-band-lead-secondary { padding-left: 0; gap: 1rem; }
+  .np-lead-digest-cell { padding-bottom: 0.75rem; }
+
+  /* Feature side: no left rule when stacked */
+  .np-band-feature { padding: 0.75rem 0; gap: 1.25rem; }
+
+  /* Brief lede is already terse; keep it tight */
+  .np-brief-headline { font-size: 1.02rem !important; line-height: 1.16; }
+  .np-brief-lede { font-size: 0.78rem; line-height: 1.4; }
+
+  /* Column-triple / column-pair / two-split all collapse to 1fr */
+  .np-band-column-triple,
+  .np-band-column-pair,
+  .np-band-two-split,
+  .np-band-photo-strip,
+  .np-band-briefs {
+    gap: 1.25rem;
+  }
+
+  /* Reduce lead body text on tiny screens */
+  .np-lede { font-size: 0.85rem; line-height: 1.5; }
+
+  /* Tap-target: minimum 44x44px for the primary story links.
+     Adding vertical padding on the link (with no visible outline) grows
+     the hit area without altering the layout. */
+  .np-headline-link {
+    display: inline-block;
+    padding: 3px 0;
+    min-height: 36px;
+  }
+  .np-src a {
+    display: inline-block;
+    padding: 4px 0;
+  }
+
+  /* Reader page: shrink the drop cap so it doesn't eat the paragraph.
+     The Yinit initial at 5em on desktop is majestic; on 375px it's
+     roughly 90px tall, taller than 4 lines of body text — the paragraph
+     visually breaks in half. Down to 3.4em keeps the ornament but lets
+     the paragraph flow around 3 clean lines. */
+  .np-reader { padding: 0 1rem; }
+  .np-reader-body { font-size: 1rem; line-height: 1.7; }
+  .np-reader-body p:first-of-type::first-letter {
+    font-size: 3.4em;
+    padding: 0.2rem 0.45rem 0 0;
+  }
+  .page-post article p:first-of-type::first-letter {
+    font-size: 3.5em;
+    padding: 0.2rem 0.5rem 0 0;
+  }
+
+  /* Reader outbound link — bigger tap target */
+  .np-reader-outbound a {
+    padding: 0.75rem 1rem;
+    font-size: 11px;
+  }
+}
+
+/* Tablet-specific tweaks (641-899px) — most bands are still single-column
+   but pair grid needs its own care */
+@media (min-width: 641px) and (max-width: 899px) {
+  .np-band-lead .np-img-wrap,
+  .np-band-feature .np-img-wrap {
+    height: 240px;
+    max-height: 240px;
+  }
+  .np-band-lead-main .np-tile .np-img-wrap,
+  .np-feature-main .np-tile .np-img-wrap {
+    max-height: 300px;
+    height: 300px;
+  }
+  .np-band-lead-main .np-tile .np-img-wrap .np-img,
+  .np-feature-main .np-tile .np-img-wrap .np-img {
+    height: 300px !important;
+  }
+}
+
+/* Very narrow screens (320-360px) — squeeze a hair more */
+@media (max-width: 360px) {
+  .np-band-lead-main .np-tile .np-img-wrap,
+  .np-feature-main .np-tile .np-img-wrap {
+    max-height: 200px !important;
+    height: 200px !important;
+  }
+  .np-band-lead-main .np-tile .np-img-wrap .np-img,
+  .np-feature-main .np-tile .np-img-wrap .np-img {
+    height: 200px !important;
+  }
+  .np-tile .np-img-wrap { max-height: 180px !important; }
+  .np-tile .np-img-wrap .np-img { height: 180px !important; }
+}
+
+/* Masthead section rail — on very narrow screens the 7-section list may
+   overflow. Wrap gracefully with reduced letter-spacing rather than
+   horizontal scroll. */
+@media (max-width: 480px) {
+  .np-masthead-rail {
+    letter-spacing: 0.12em;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+  }
+  .np-masthead-rail .np-rail-inner {
+    white-space: normal;
+    line-height: 1.6;
+  }
+}

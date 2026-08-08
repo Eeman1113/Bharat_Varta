@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import Masthead from "@/components/Masthead";
 import Footer from "@/components/Footer";
+
+export const metadata: Metadata = {
+  title: "Subscribe",
+  description:
+    "Subscribe to Bharat Varta — receive future issues of India's daily wire by post.",
+  alternates: { canonical: "/subscribe" },
+  openGraph: {
+    title: "Subscribe · Bharat Varta",
+    description:
+      "Subscribe to Bharat Varta — receive future issues of India's daily wire by post.",
+    url: "/subscribe",
+    type: "website",
+  },
+};
 
 export default function SubscribePage() {
   return (

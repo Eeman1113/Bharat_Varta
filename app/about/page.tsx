@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import Masthead from "@/components/Masthead";
 import Footer from "@/components/Footer";
+
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "About Bharat Varta — a quiet, algorithm-free vintage broadsheet aggregating live headlines from 300+ Indian news sources.",
+  alternates: { canonical: "/about" },
+  openGraph: {
+    title: "About · Bharat Varta",
+    description:
+      "About Bharat Varta — a quiet, algorithm-free vintage broadsheet aggregating live headlines from 300+ Indian news sources.",
+    url: "/about",
+    type: "website",
+  },
+};
 
 export default function AboutPage() {
   return (

@@ -1,7 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Masthead from "@/components/Masthead";
 import Footer from "@/components/Footer";
 import { posts } from "@/lib/posts";
+
+export const metadata: Metadata = {
+  title: "Archive",
+  description:
+    "Archive of essays and past issues of Bharat Varta — India's daily wire.",
+  alternates: { canonical: "/archive" },
+  openGraph: {
+    title: "Archive · Bharat Varta",
+    description:
+      "Archive of essays and past issues of Bharat Varta — India's daily wire.",
+    url: "/archive",
+    type: "website",
+  },
+};
 
 export default function ArchivePage() {
   return (

@@ -1,0 +1,28 @@
+# Bharat Varta — allow all crawlers, everywhere.
+User-agent: *
+Allow: /
+
+# Named good citizens — explicit for clarity.
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+Sitemap: https://bharatvarta.vercel.app/sitemap.xml
+Host: bharatvarta.vercel.app

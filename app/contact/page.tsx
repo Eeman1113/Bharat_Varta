@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import Masthead from "@/components/Masthead";
 import Footer from "@/components/Footer";
+
+export const metadata: Metadata = {
+  title: "Correspondence",
+  description:
+    "Contact the editor of Bharat Varta — letters, corrections, and thoughtful disagreements welcome.",
+  alternates: { canonical: "/contact" },
+  openGraph: {
+    title: "Correspondence · Bharat Varta",
+    description:
+      "Contact the editor of Bharat Varta — letters, corrections, and thoughtful disagreements welcome.",
+    url: "/contact",
+    type: "website",
+  },
+};
 
 export default function ContactPage() {
   return (

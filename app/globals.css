@@ -355,8 +355,15 @@ hr.rule {
   line-height: 1.45;
   text-align: justify;
   hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
   color: rgba(26, 26, 26, 0.82);
   margin: 0.2rem 0 0;
+}
+.np-brief-lede {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 .np-lede-empty {
   font-family: theme("fontFamily.mono");
@@ -432,10 +439,11 @@ hr.rule {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
-/* Section header — clean centered chapter-title style */
+/* Section header — clean centered chapter-title style.
+   Tightened: broadsheet pages don't waste vertical air between chapters. */
 .np-section-head {
   text-align: center;
-  margin: 4rem 0 2.5rem;
+  margin: 2.5rem 0 1.25rem;
   padding: 0;
   border: 0;
 }
@@ -837,21 +845,21 @@ hr.rule {
 .np-section-pair {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: 1rem;
+  margin-top: 0.75rem;
   position: relative;
 }
 @media (min-width: 900px) {
   .np-section-pair {
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    gap: 2rem;
   }
   .np-section-pair::before {
     content: "";
     position: absolute;
     left: 50%;
-    top: 5rem;
-    bottom: 2rem;
+    top: 3rem;
+    bottom: 1rem;
     width: 1px;
     background: theme("colors.rule");
     transform: translateX(-50%);
@@ -872,13 +880,95 @@ hr.rule {
   flex-direction: column;
 }
 .np-band {
-  padding: 0.25rem 0 1.5rem;
+  padding: 0.25rem 0 0.75rem;
 }
-/* Thin hairline separator between bands — the visual "band boundary" */
+/* Thin hairline separator between bands — the visual "band boundary".
+   Tighter than before so bands sit shoulder-to-shoulder like a real
+   broadsheet page (no lounging whitespace between packages). */
 .np-band-sep {
   border: 0;
   border-top: 1px solid theme("colors.rule");
-  margin: 0.5rem 0 1.75rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+/* ---- Dense multi-column flow --------------------------------------------
+   The core "broadsheet" density unit. Uses CSS `columns` (not grid) so
+   articles pour continuously top-to-bottom through N vertical columns.
+   Column-rule paints a hairline between columns automatically. Each item
+   is a headline + 1-2 line justified lede + micro-src, separated by a
+   thin hr — no gaps, no padding between items. `break-inside: avoid`
+   prevents an article from splitting across a column break. Collapses
+   gracefully to fewer columns at narrower widths.                          */
+.np-dense-flow {
+  column-count: 1;
+  column-gap: 1.5rem;
+  column-rule: 1px solid theme("colors.rule");
+}
+@media (min-width: 500px)  { .np-dense-flow { column-count: 2; } }
+@media (min-width: 800px)  { .np-dense-flow { column-count: 3; } }
+@media (min-width: 1050px) { .np-dense-flow { column-count: 4; } }
+@media (min-width: 1250px) { .np-dense-flow { column-count: var(--dense-cols, 5); } }
+
+/* An individual item in a dense flow — never splits across columns,
+   tight vertical rhythm, nothing else. */
+.np-dense-item {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  display: block;
+  margin: 0;
+}
+.np-dense-item + .np-dense-item {
+  margin-top: 0;
+}
+/* Hairline between items in the same column — replaces the padding gap
+   that a grid layout would use. Very small margin above/below so items
+   feel like consecutive stories in one column. */
+.np-dense-hr {
+  border: 0;
+  border-top: 1px solid theme("colors.rule");
+  margin: 0.55rem 0 0.55rem;
+}
+
+/* Dense band — same as .np-dense-flow but as the outer band. Class stack
+   is <div class="np-band np-band-dense np-dense-flow">. */
+.np-band-dense {
+  padding: 0.25rem 0 0.5rem;
+}
+
+/* Everything inside a dense flow uses justified type with hyphenation —
+   that tight rectangular set is what visually reads as "newspaper". */
+.np-dense-flow .np-lede,
+.np-dense-flow .np-brief-lede {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  margin: 0.15rem 0 0;
+}
+.np-dense-flow .np-headline {
+  margin-bottom: 0.25rem;
+}
+.np-dense-flow .np-src {
+  margin-top: 0.25rem;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+/* Very tiny headline scale inside dense flow — think broadsheet brief. */
+.np-dense-flow .np-brief-headline {
+  font-size: clamp(0.95rem, 2.1vw, 1.05rem);
+  line-height: 1.14;
+}
+
+/* Compact-column contexts (inside a paired-section chapter): still dense
+   but with fewer columns since the container is only ~640px. */
+.np-section-pair-col .np-dense-flow {
+  column-count: 1;
+}
+@media (min-width: 700px) {
+  .np-section-pair-col .np-dense-flow { column-count: 2; }
+}
+@media (min-width: 1100px) {
+  .np-section-pair-col .np-dense-flow { column-count: var(--dense-cols, 3); }
 }
 
 /* ---- Lead package -------------------------------------------------------
@@ -889,7 +979,7 @@ hr.rule {
 .np-band-lead {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 1rem;
   align-items: start;
 }
 @media (min-width: 900px) {
@@ -908,28 +998,25 @@ hr.rule {
     border-right: 1px solid theme("colors.rule");
   }
 }
-/* Lead secondary = dense 2-col mini-digest of 4–6 briefs, each with
-   headline + 1-line lede + src. Packed top-aligned (no space-between
-   stretching) so items sit tight against the top of the hero, no dead
-   whitespace beneath. No left border (phantom-rule fix retained). */
+/* Lead secondary = dense CSS-columns flow of many briefs pouring through
+   2 columns. No grid, no cell padding, no dashed inter-cell borders —
+   just hairline `column-rule` between columns and thin hr between items.
+   This is the true broadsheet "briefs column" reading experience. */
 .np-band-lead-secondary {
   padding-left: 2rem;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem 1.75rem;
-  align-content: start;
+  column-count: 1;
+  column-gap: 1.5rem;
+  column-rule: 1px solid theme("colors.rule");
 }
 @media (min-width: 900px) {
   .np-band-lead-secondary {
-    grid-template-columns: 1fr 1fr;
+    column-count: 2;
   }
 }
+/* Legacy cell name kept for any downstream code; treated as a dense item. */
 .np-lead-digest-cell {
-  padding-bottom: 1rem;
-  border-bottom: 1px dashed theme("colors.rule");
-}
-/* Kill border-bottom on the trailing pair (last row of the 2-col grid). */
-.np-lead-digest-cell:nth-last-child(-n+2) {
+  break-inside: avoid;
+  page-break-inside: avoid;
   padding-bottom: 0;
   border-bottom: 0;
 }
@@ -1057,13 +1144,18 @@ hr.rule {
 .np-feature-side {
   padding-left: 1.25rem;
   border-left: 1px solid theme("colors.rule");
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  /* Spread the stack so items fill the feature's height, matching the
-     bordered main-column height instead of leaving huge dead whitespace. */
-  justify-content: space-between;
   align-self: stretch;
+}
+/* When the side runs as a dense flow, we override the earlier flex/column
+   layout because column-count needs the container to be a block. */
+.np-feature-side.np-dense-flow {
+  display: block;
+  column-count: 1;
+  column-gap: 1.25rem;
+  column-rule: 1px solid theme("colors.rule");
+}
+@media (min-width: 1050px) {
+  .np-feature-side.np-dense-flow { column-count: 2; }
 }
 @media (max-width: 899px) {
   .np-feature-side {

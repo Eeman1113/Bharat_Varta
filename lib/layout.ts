@@ -172,7 +172,12 @@ export type Band =
   // Row of 2–3 image tiles of matched height ("In Pictures" strip).
   | { kind: "photoStrip"; items: Article[] }
   // Row split into two column groups of 2 stories each (6+6).
-  | { kind: "twoColumnSplit"; left: [Article, Article]; right: [Article, Article] };
+  | { kind: "twoColumnSplit"; left: [Article, Article]; right: [Article, Article] }
+  // Dense multi-column flow — 20–40 short items packed through CSS columns
+  // with column-rules. Each item is headline + 1-2 line lede + src, no gap,
+  // just a hairline hr between. This is the authentic broadsheet "packed
+  // column" reading experience.
+  | { kind: "denseColumns"; items: Article[]; columns: number };
 
 // ---------------------------------------------------------------------------
 // Band builders — each attempts to consume from the pool and returns
@@ -183,11 +188,12 @@ function buildLead(pool: Pool, rand: () => number, _opts: { withSecondary: boole
   const lead = pool.take("leadScore", { requireImage: true });
   if (!lead) return undefined;
   const layout: "image-top" | "image-left" = "image-top";
-  // Secondary column = a dense 2-col mini-digest of 4–6 short items, each
-  // with headline + 1-line lede + src. Packs tightly to fill the height of
-  // the lead's hero image + headline without dead whitespace.
+  // Secondary column = a dense 2-col flow of ~12 short items, each with
+  // headline + 1-line lede + src. Packs tightly to fill (and often overflow)
+  // the height of the lead's hero image, giving the 1918 broadsheet feel
+  // where the sidebar reads as its own dense chapter of news.
   const digest: ArticleGrade[] = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 12; i++) {
     const g = pool.take("briefScore", { forbidImage: true }) ?? pool.take("briefScore");
     if (!g) break;
     digest.push(g);
@@ -253,22 +259,11 @@ function buildFeature(pool: Pool, rand: () => number): Band | undefined {
   const feature = pool.take("featureScore", { requireImage: true });
   if (!feature) return undefined;
   const featureSpan: 5 | 6 = weightedPick<5 | 6>([[6, 2], [5, 1]], rand);
-  const sideCols = 12 - featureSpan;
-  // Side is either a 2-brief stack or a single column
-  const sideKind: "briefs" | "column" = weightedPick<"briefs" | "column">([["briefs", 2], ["column", 1]], rand);
-  let side: ArticleGrade[];
-  if (sideKind === "briefs") {
-    // 3–4 stacked briefs (was 2) so the side fills the feature's height
-    // instead of leaving hundreds of pixels of dead whitespace beneath.
-    side = pool.takeN(4, "briefScore");
-    if (side.length < 2) return undefined;
-  } else {
-    const c = pool.take("columnScore", { forbidImage: true }) ?? pool.take("columnScore");
-    if (!c) return undefined;
-    // Add 2 additional briefs beneath the column story to fill vertical space.
-    const extras = pool.takeN(2, "briefScore");
-    side = [c, ...extras];
-  }
+  // Side is always dense briefs — many items packed into 1-2 mini-columns
+  // that fills the feature's height instead of leaving dead whitespace.
+  const sideKind: "briefs" | "column" = "briefs";
+  const side = pool.takeN(8, "briefScore");
+  if (side.length < 3) return undefined;
   return {
     kind: "feature",
     feature: feature.article,
@@ -295,6 +290,37 @@ function buildTwoColumnSplit(pool: Pool): Band | undefined {
   };
 }
 
+// Dense multi-column band — drain N items from the pool (any shape, with
+// preference for brief-suitable ones) into a flowed multi-column container.
+// Falls back gracefully; will pour as few as `min` items if pool is thin.
+function buildDenseColumns(pool: Pool, columns: number, target: number, min: number): Band | undefined {
+  // Prefer briefs (short, no image), then fall back to anything remaining.
+  const wanted = Math.min(target, pool.size());
+  if (wanted < min) return undefined;
+  const items: ArticleGrade[] = [];
+  // First pass: prefer brief-shaped items with no image (flows tightest).
+  for (let i = 0; i < wanted; i++) {
+    const it = pool.take("briefScore", { forbidImage: true });
+    if (!it) break;
+    items.push(it);
+  }
+  // Second pass: fill the rest with best-brief-scoring items regardless.
+  while (items.length < wanted) {
+    const it = pool.take("briefScore");
+    if (!it) break;
+    items.push(it);
+  }
+  if (items.length < min) {
+    // Put them back? Simplest: just return what we have if enough for the min.
+    return undefined;
+  }
+  return {
+    kind: "denseColumns",
+    items: items.map((x) => x.article),
+    columns,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Section recipes — a *bank* of band-sequences appropriate for each section.
 // The composer picks one recipe at random and attempts to build each band.
@@ -310,7 +336,10 @@ type BandStep =
   | { t: "columnPair" }
   | { t: "feature" }
   | { t: "photoStrip" }
-  | { t: "twoColumnSplit" };
+  | { t: "twoColumnSplit" }
+  // Dense CSS-columns flow — target ~N items in K columns, pouring
+  // continuously. Gives the paper genuine mass.
+  | { t: "denseColumns"; columns: number; target: number; min: number };
 
 type Recipe = BandStep[];
 
@@ -319,119 +348,88 @@ type Recipe = BandStep[];
 // with a photograph. Variety comes from which of the two opens, which
 // article gets promoted, and what fills the tail.
 const FRONT_RECIPES: Recipe[] = [
-  // Lead + digest + feature + columns
+  // Lead + deep 6-column flow — the classic 1918 broadsheet look.
   [
     { t: "lead", withSecondary: true },
-    { t: "briefsDigest", columns: 4, rows: 2 },
+    { t: "denseColumns", columns: 6, target: 30, min: 8 },
     { t: "feature" },
-    { t: "columnTriple" },
+    { t: "denseColumns", columns: 5, target: 20, min: 6 },
   ],
-  // Lead + feature + digest + columns
+  // Lead + feature + dense 6-col
   [
     { t: "lead", withSecondary: true },
     { t: "feature" },
-    { t: "briefsDigest", columns: 4, rows: 2 },
-    { t: "columnTriple" },
+    { t: "denseColumns", columns: 6, target: 32, min: 8 },
   ],
-  // Lead + two-split + digest + pair
+  // Lead + dense 5-col + feature + dense 6-col
   [
     { t: "lead", withSecondary: true },
-    { t: "twoColumnSplit" },
-    { t: "briefsDigest", columns: 4, rows: 2 },
-    { t: "columnPair" },
+    { t: "denseColumns", columns: 5, target: 18, min: 6 },
+    { t: "feature" },
+    { t: "denseColumns", columns: 6, target: 24, min: 6 },
   ],
-  // Lead + column-triple + feature + digest
+  // Lead + wide dense flow (fills the page below the fold)
   [
     { t: "lead", withSecondary: true },
-    { t: "columnTriple" },
-    { t: "feature" },
-    { t: "briefsDigest", columns: 4, rows: 2 },
+    { t: "denseColumns", columns: 6, target: 40, min: 10 },
   ],
-  // Feature-led: bordered feature story leads, deep digest after.
+  // Feature-led: bordered feature story leads, deep dense flow after.
   [
     { t: "feature" },
-    { t: "briefsDigest", columns: 4, rows: 2 },
-    { t: "twoColumnSplit" },
-    { t: "columnTriple" },
-  ],
-  // Feature + column-triple + digest + pair
-  [
+    { t: "denseColumns", columns: 6, target: 32, min: 8 },
     { t: "feature" },
-    { t: "columnTriple" },
-    { t: "briefsDigest", columns: 3, rows: 3 },
-    { t: "columnPair" },
+    { t: "denseColumns", columns: 5, target: 18, min: 6 },
   ],
 ];
 
 const STANDARD_RECIPES: Recipe[] = [
   [
     { t: "lead", withSecondary: true },
-    { t: "columnTriple" },
-    { t: "briefs", count: 4 },
+    { t: "denseColumns", columns: 5, target: 20, min: 6 },
     { t: "feature" },
+    { t: "denseColumns", columns: 5, target: 12, min: 4 },
   ],
   [
     { t: "lead", withSecondary: true },
     { t: "feature" },
-    { t: "briefs", count: 3 },
-    { t: "columnPair" },
+    { t: "denseColumns", columns: 5, target: 24, min: 6 },
   ],
   // Column-first opener
   [
-    { t: "columnTriple" },
+    { t: "denseColumns", columns: 5, target: 16, min: 5 },
     { t: "feature" },
-    { t: "briefs", count: 4 },
-    { t: "columnPair" },
-  ],
-  // Briefs-first opener
-  [
-    { t: "briefs", count: 4 },
-    { t: "feature" },
-    { t: "columnTriple" },
-    { t: "briefs", count: 3 },
+    { t: "denseColumns", columns: 5, target: 16, min: 5 },
   ],
   // Feature-first opener
   [
     { t: "feature" },
-    { t: "twoColumnSplit" },
-    { t: "columnTriple" },
-    { t: "briefs", count: 3 },
-  ],
-  // Two-split opener
-  [
-    { t: "twoColumnSplit" },
-    { t: "columnTriple" },
-    { t: "briefs", count: 4 },
+    { t: "denseColumns", columns: 5, target: 20, min: 6 },
+    { t: "feature" },
+    { t: "denseColumns", columns: 4, target: 12, min: 4 },
   ],
 ];
 
 // Compact recipes — used for sections that render inside a narrow
-// paired-column (~640px wide). No lead/feature/twoColumnSplit since
-// those need horizontal room; stick to briefs / column-pair / column-triple.
+// paired-column (~640px wide). Dense multi-column at 2-3 cols works
+// beautifully in this width; that's still authentic broadsheet.
 const COMPACT_RECIPES: Recipe[] = [
   [
-    { t: "briefs", count: 3 },
+    { t: "denseColumns", columns: 3, target: 14, min: 4 },
     { t: "columnPair" },
-    { t: "briefs", count: 3 },
-    { t: "columnPair" },
+    { t: "denseColumns", columns: 3, target: 10, min: 4 },
   ],
   [
     { t: "columnPair" },
-    { t: "briefs", count: 3 },
+    { t: "denseColumns", columns: 3, target: 14, min: 4 },
     { t: "columnPair" },
-    { t: "briefs", count: 3 },
   ],
   [
-    { t: "columnTriple" },
-    { t: "briefs", count: 3 },
-    { t: "columnPair" },
-    { t: "briefs", count: 3 },
+    { t: "denseColumns", columns: 3, target: 12, min: 4 },
+    { t: "feature" },
+    { t: "denseColumns", columns: 3, target: 10, min: 4 },
   ],
   [
-    { t: "briefs", count: 4 },
-    { t: "columnPair" },
-    { t: "briefs", count: 3 },
-    { t: "columnPair" },
+    { t: "denseColumns", columns: 3, target: 18, min: 6 },
   ],
 ];
 
@@ -518,20 +516,20 @@ export function composeSection(
       case "twoColumnSplit":
         band = buildTwoColumnSplit(pool);
         break;
+      case "denseColumns":
+        band = buildDenseColumns(pool, step.columns, step.target, step.min);
+        break;
     }
     if (band) bands.push(band);
   }
 
-  // Tail: if the pool still has leftover articles, drain them into
-  // additional rule-following bands rather than a random slurry.
-  while (pool.size() >= 3) {
-    // Prefer briefs to close out a section — that's what real papers do.
-    const b =
-      buildBriefs(pool, rand, pool.size() >= 5 ? 5 : (pool.size() >= 4 ? 4 : 3)) ??
-      buildColumnTriple(pool) ??
-      buildColumnPair(pool, rand);
-    if (!b) break;
-    bands.push(b);
+  // Tail: drain remaining articles into one final dense-column flow.
+  // No matter how thin the pool, if there are ≥3 left, pack them.
+  if (pool.size() >= 3) {
+    const remaining = pool.size();
+    const cols = compact ? 3 : Math.min(6, Math.max(4, Math.ceil(remaining / 4)));
+    const tail = buildDenseColumns(pool, cols, remaining, 3);
+    if (tail) bands.push(tail);
   }
   // If exactly 2 remain, add a pair.
   if (pool.size() === 2) {

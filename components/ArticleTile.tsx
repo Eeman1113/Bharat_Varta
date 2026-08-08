@@ -54,8 +54,8 @@ export default function ArticleTile({
 
   const wrapClass =
     variant === "landscape"
-      ? "np-tile np-tile-landscape break-inside-avoid mb-6"
-      : "np-tile break-inside-avoid mb-6";
+      ? "np-tile np-tile-landscape break-inside-avoid mb-3"
+      : "np-tile break-inside-avoid mb-3";
 
   // Landscape splits the tile with image on the left, text on the right.
   if (variant === "landscape" && hasImage) {

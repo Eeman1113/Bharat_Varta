@@ -12,3 +12,4 @@ tsconfig.tsbuildinfo
 # Assistant / agent scratch files — never commit
 CLAUDE.md
 AGENTS.md
+.vercel

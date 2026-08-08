@@ -42,9 +42,12 @@ function LeadBand({ band }: { band: Extract<Band, { kind: "lead" }> }) {
       <div className="np-band-lead-main">
         <ArticleTile article={lead} variant="hero" showImage={true} />
       </div>
-      <div className="np-band-lead-secondary">
-        {digest.map((a) => (
-          <article key={a.id} className="np-lead-digest-cell">
+      {/* Secondary column = a CSS-columns flow of many small items, packed
+          continuously with hr separators — the true broadsheet "briefs
+          column" feel, not a spaced-out grid of 4-6 cards. */}
+      <div className="np-band-lead-secondary np-dense-flow">
+        {digest.map((a, i) => (
+          <article key={a.id} className="np-dense-item">
             <h3 className="np-headline np-brief-headline">
               <Link href={`/read/${a.id}`} className="np-headline-link">
                 {a.title}
@@ -53,15 +56,49 @@ function LeadBand({ band }: { band: Extract<Band, { kind: "lead" }> }) {
             {a.description && (
               <p className="np-lede np-brief-lede">{truncateAtWord(a.description, 130)}</p>
             )}
-            <p className="np-src mt-1.5">
+            <p className="np-src mt-1">
               src.&nbsp;
               <a href={a.source.homepage} target="_blank" rel="noopener noreferrer">
                 {a.source.name}
               </a>
             </p>
+            {i < digest.length - 1 && <hr className="np-dense-hr" />}
           </article>
         ))}
       </div>
+    </div>
+  );
+}
+
+// Dense multi-column flow — many items pouring through N CSS columns with
+// hairline column-rules and tight hr separators between items. This is the
+// core "1918 broadsheet" density unit.
+function DenseColumnsBand({ band }: { band: Extract<Band, { kind: "denseColumns" }> }) {
+  const { items, columns } = band;
+  return (
+    <div
+      className="np-band np-band-dense np-dense-flow"
+      style={{ ["--dense-cols" as string]: columns }}
+    >
+      {items.map((a, i) => (
+        <article key={a.id} className="np-dense-item">
+          <h3 className="np-headline np-brief-headline">
+            <Link href={`/read/${a.id}`} className="np-headline-link">
+              {a.title}
+            </Link>
+          </h3>
+          {a.description && (
+            <p className="np-lede np-brief-lede">{truncateAtWord(a.description, 140)}</p>
+          )}
+          <p className="np-src mt-1">
+            src.&nbsp;
+            <a href={a.source.homepage} target="_blank" rel="noopener noreferrer">
+              {a.source.name}
+            </a>
+          </p>
+          {i < items.length - 1 && <hr className="np-dense-hr" />}
+        </article>
+      ))}
     </div>
   );
 }
@@ -138,7 +175,7 @@ function ColumnPairBand({ band }: { band: Extract<Band, { kind: "columnPair" }> 
 }
 
 function FeatureBand({ band }: { band: Extract<Band, { kind: "feature" }> }) {
-  const { feature, side, sideKind, featureSpan } = band;
+  const { feature, side, featureSpan } = band;
   const sideSpan = 12 - featureSpan;
   return (
     <div
@@ -148,30 +185,28 @@ function FeatureBand({ band }: { band: Extract<Band, { kind: "feature" }> }) {
       <div className="np-feature-main">
         <ArticleTile article={feature} variant="hero" showImage={true} />
       </div>
-      <div className={`np-feature-side ${sideKind === "briefs" ? "np-feature-side-briefs" : "np-feature-side-column"}`}>
-        {sideKind === "briefs" ? (
-          side.map((a) => (
-            <article key={a.id} className="np-brief-cell np-brief-cell-stacked">
-              <h3 className="np-headline np-brief-headline">
-                <Link href={`/read/${a.id}`} className="np-headline-link">
-                  {a.title}
-                </Link>
-              </h3>
-              <p className="np-src mt-1.5">
-                src.&nbsp;
-                <a href={a.source.homepage} target="_blank" rel="noopener noreferrer">
-                  {a.source.name}
-                </a>
-              </p>
-            </article>
-          ))
-        ) : (
-          side.map((a) => (
-            <div key={a.id} className="np-column-cell">
-              <ArticleTile article={a} variant="column" showImage={false} />
-            </div>
-          ))
-        )}
+      {/* Side column = dense CSS-columns flow of briefs pouring beside the
+          feature photo. Packs tight, no dead whitespace. */}
+      <div className="np-feature-side np-dense-flow">
+        {side.map((a, i) => (
+          <article key={a.id} className="np-dense-item">
+            <h3 className="np-headline np-brief-headline">
+              <Link href={`/read/${a.id}`} className="np-headline-link">
+                {a.title}
+              </Link>
+            </h3>
+            {a.description && (
+              <p className="np-lede np-brief-lede">{truncateAtWord(a.description, 110)}</p>
+            )}
+            <p className="np-src mt-1">
+              src.&nbsp;
+              <a href={a.source.homepage} target="_blank" rel="noopener noreferrer">
+                {a.source.name}
+              </a>
+            </p>
+            {i < side.length - 1 && <hr className="np-dense-hr" />}
+          </article>
+        ))}
       </div>
     </div>
   );
@@ -215,6 +250,7 @@ function BandRenderer({ band }: { band: Band }) {
     case "feature": return <FeatureBand band={band} />;
     case "photoStrip": return <PhotoStripBand band={band} />;
     case "twoColumnSplit": return <TwoColumnSplitBand band={band} />;
+    case "denseColumns": return <DenseColumnsBand band={band} />;
   }
 }
 
@@ -268,7 +304,11 @@ export default async function HomePage() {
     if (!articles.length) return [];
     return composeSection(sec, articles, seedFor(base, sec), {
       compact: isCompact,
-      maxArticles: isCompact ? 10 : sec === "front" ? 18 : 14,
+      // Feed a much larger pool so the dense-column bands can pack the
+      // page with real broadsheet mass. Cap high; the composer will only
+      // consume what its recipes call for and drain the rest into the
+      // tail dense-column band.
+      maxArticles: isCompact ? 28 : sec === "front" ? 60 : 42,
     });
   };
 
